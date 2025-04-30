@@ -9,7 +9,9 @@ function App() {
   const successSoundRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    successSoundRef.current = new Audio("/sounds/success-beep.mp3");
+    successSoundRef.current = new Audio(
+      import.meta.env.BASE_URL + "/sounds/success-beep.mp3",
+    );
   }, []);
 
   const symbolsList: CharacterData[] = [
