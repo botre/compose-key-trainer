@@ -1,0 +1,84 @@
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+  line-height: 1.5;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f5f7;
+}
+
+.container {
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+  padding: 50px;
+  background-color: white;
+  border-radius: 16px;
+}
+
+.streak {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #4b4b4b;
+  margin-bottom: 20px;
+}
+
+.character {
+  font-size: 8rem;
+  margin-bottom: 30px;
+  color: #1cb0f6;
+}
+
+.key {
+  display: inline-block;
+  padding: 10px 16px;
+  background-color: #f7f7f7;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  margin: 0 8px;
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 1.4rem;
+  color: #4b4b4b;
+  transition: all 0.1s ease;
+}
+
+.key:hover {
+  transform: translateY(-2px);
+}
+
+.sequence {
+  margin: 30px 0;
+  font-size: 1.6rem;
+  color: #4b4b4b;
+}
+
+input {
+  padding: 16px;
+  font-size: 1.6rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  width: 70%;
+  max-width: 400px;
+  margin: 40px auto 0;
+  text-align: center;
+  display: block;
+  background-color: #f7f7f7;
+  transition: all 0.2s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: #1cb0f6;
+  background-color: white;
+}
