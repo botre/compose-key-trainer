@@ -7,6 +7,8 @@ import {
   Fragment,
 } from "react";
 
+type GameMode = "practice" | "challenge";
+
 const TIMER_DURATION_MS = 5000;
 
 type CharacterData = {
@@ -45,9 +47,9 @@ function App() {
         {character: "¡", sequence: ["!", "!"], decks: ["Symbols", "Spanish"]},
         {character: "¢", sequence: ["c", "/"], decks: ["Currencies"]},
         {character: "£", sequence: ["-", "L"], decks: ["Currencies"]},
+        {character: "£", sequence: ["-", "L"], decks: ["Currencies"]},
         {character: "¤", sequence: ["o", "x"], decks: ["Currencies"]},
         {character: "¥", sequence: ["=", "Y"], decks: ["Currencies"]},
-        {character: "¦", sequence: ["|", "|"], decks: ["Symbols"]},
         {character: "§", sequence: ["s", "o"], decks: ["Symbols"]},
         {character: "©", sequence: ["o", "c"], decks: ["Symbols"]},
         {character: "«", sequence: ["<", "<"], decks: ["Symbols", "French", "Portuguese", "Spanish"]},
@@ -133,7 +135,7 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [successStreak, setSuccessStreak] = useState(0);
   const [timeLeftMs, setTimeLeftMs] = useState(TIMER_DURATION_MS);
-  const [timerActive, setTimerActive] = useState(false);
+  const [gameMode, setGameMode] = useState<GameMode>("practice");
 
   const shuffleArray = (array: CharacterData[]): CharacterData[] => {
     const shuffled = [...array];
@@ -161,13 +163,15 @@ function App() {
 
   useEffect(() => {
     setTimeLeftMs(TIMER_DURATION_MS);
-    setTimerActive(true);
+
+    if (gameMode !== "challenge") {
+      return;
+    }
 
     const timerInterval = setInterval(() => {
       setTimeLeftMs((prevTime) => {
         if (prevTime <= 100) {
           clearInterval(timerInterval);
-          setTimerActive(false);
           setSuccessStreak(0);
           return 0;
         }
@@ -176,7 +180,7 @@ function App() {
     }, 100);
 
     return () => clearInterval(timerInterval);
-  }, [currentIndex, shuffledSymbols.length]);
+  }, [currentIndex, shuffledSymbols.length, gameMode]);
 
   const currentSymbol =
     shuffledSymbols.length > 0 ? shuffledSymbols[currentIndex] : symbolsList[0];
@@ -186,24 +190,19 @@ function App() {
     setUserInput(input);
 
     if (input === currentSymbol.character) {
-      if (timerActive) {
-        setSuccessStreak((prevStreak) => {
-          const newStreak = prevStreak + 1;
+      if (successSoundRef.current) {
+        successSoundRef.current.currentTime = 0;
+        successSoundRef.current
+          .play()
+          .catch((error) => console.error("Error playing sound:", error));
+      }
 
-          if (successSoundRef.current) {
-            successSoundRef.current.currentTime = 0;
-            successSoundRef.current
-              .play()
-              .catch((error) => console.error("Error playing sound:", error));
-          }
-
-          return newStreak;
-        });
+      if (gameMode === "challenge") {
+        setSuccessStreak((prevStreak) => prevStreak + 1);
+        setTimeLeftMs(TIMER_DURATION_MS);
       }
 
       setUserInput("");
-      setTimeLeftMs(TIMER_DURATION_MS);
-      setTimerActive(true);
       setCurrentIndex((prevIndex) => (prevIndex + 1) % shuffledSymbols.length);
     }
   };
@@ -213,6 +212,12 @@ function App() {
       ...prevEnabledDecks,
       [deckName]: !prevEnabledDecks[deckName],
     }));
+  };
+
+  const toggleGameMode = () => {
+    setGameMode((prevMode) =>
+      prevMode === "practice" ? "challenge" : "practice",
+    );
   };
 
   const formatSequence = (sequence: string[]) => (
@@ -232,6 +237,26 @@ function App() {
   return (
     <div className="app-container">
       <div className="sidebar">
+        <h3>Mode</h3>
+        <div className="mode-toggle">
+          <div className="mode-label">
+            <span className="subtle-emoji">
+              {gameMode === "practice" ? "🎓" : "🏆"}
+            </span>{" "}
+            {gameMode === "practice" ? "Practice" : "Challenge"}
+          </div>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              toggleGameMode();
+            }}
+            className="mode-switch-link"
+          >
+            Switch to {gameMode === "practice" ? "Challenge" : "Practice"} Mode
+          </a>
+        </div>
+
         <h3>Decks</h3>
         {allDecks.map((deck) => (
           <div key={deck} className="deck-option">
@@ -241,25 +266,33 @@ function App() {
                 checked={enabledDecks[deck]}
                 onChange={() => handleDeckToggle(deck)}
               />
-              <span style={{ opacity: 0.5 }}>{Decks[deck].emoji}</span>{" "}
+              <span className="subtle-emoji">{Decks[deck].emoji}</span>{" "}
               {Decks[deck].label}
             </label>
           </div>
         ))}
       </div>
       <div className="container">
-        <div className="streak">Streak: {successStreak}</div>
+        {gameMode === "challenge" && (
+          <div className="streak">Streak: {successStreak}</div>
+        )}
         <div className="character">{currentSymbol.character}</div>
-        <div className="sequence">{formatSequence(currentSymbol.sequence)}</div>
-        <div className="timer-bar-container">
-          <div
-            className="timer-bar"
-            style={{
-              width: `${(timeLeftMs / TIMER_DURATION_MS) * 100}%`,
-              backgroundColor: `rgb(${255 - (timeLeftMs / TIMER_DURATION_MS) * 105}, ${(timeLeftMs / TIMER_DURATION_MS) * 204}, 0)`,
-            }}
-          />
-        </div>
+        {gameMode === "practice" && (
+          <div className="sequence">
+            {formatSequence(currentSymbol.sequence)}
+          </div>
+        )}
+        {gameMode === "challenge" && (
+          <div className="timer-bar-container">
+            <div
+              className="timer-bar"
+              style={{
+                width: `${(timeLeftMs / TIMER_DURATION_MS) * 100}%`,
+                backgroundColor: `rgb(${255 - (timeLeftMs / TIMER_DURATION_MS) * 105}, ${(timeLeftMs / TIMER_DURATION_MS) * 204}, 0)`,
+              }}
+            />
+          </div>
+        )}
         <input
           type="text"
           value={userInput}

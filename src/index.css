@@ -60,6 +60,36 @@ body {
   border-radius: 3px;
 }
 
+.mode-toggle {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  gap: 4px;
+}
+
+.mode-label {
+  font-size: 0.95rem;
+  color: #4b4b4b;
+  margin-bottom: 8px;
+  font-weight: normal;
+}
+
+.subtle-emoji {
+  opacity: 0.5;
+}
+
+.mode-switch-link {
+  color: #1cb0f6;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.mode-switch-link:hover {
+  color: #0c96d9;
+  text-decoration: underline;
+}
+
 .container {
   flex: 1;
   text-align: center;
