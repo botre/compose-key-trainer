@@ -7,6 +7,8 @@ import {
   Fragment,
 } from "react";
 
+const TIMER_DURATION_MS = 5000;
+
 type CharacterData = {
   character: string;
   sequence: string[];
@@ -87,6 +89,8 @@ function App() {
   const [userInput, setUserInput] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [successStreak, setSuccessStreak] = useState(0);
+  const [timeLeftMs, setTimeLeftMs] = useState(TIMER_DURATION_MS);
+  const [timerActive, setTimerActive] = useState(false);
 
   const shuffleArray = (array: CharacterData[]): CharacterData[] => {
     const shuffled = [...array];
@@ -112,6 +116,25 @@ function App() {
     }
   }, [currentIndex, shuffledSymbols]);
 
+  useEffect(() => {
+    setTimeLeftMs(TIMER_DURATION_MS);
+    setTimerActive(true);
+
+    const timerInterval = setInterval(() => {
+      setTimeLeftMs((prevTime) => {
+        if (prevTime <= 100) {
+          clearInterval(timerInterval);
+          setTimerActive(false);
+          setSuccessStreak(0);
+          return 0;
+        }
+        return prevTime - 100;
+      });
+    }, 100);
+
+    return () => clearInterval(timerInterval);
+  }, [currentIndex, shuffledSymbols.length]);
+
   const currentSymbol =
     shuffledSymbols.length > 0 ? shuffledSymbols[currentIndex] : symbolsList[0];
 
@@ -120,16 +143,24 @@ function App() {
     setUserInput(input);
 
     if (input === currentSymbol.character) {
-      setSuccessStreak((prevStreak) => prevStreak + 1);
+      if (timerActive) {
+        setSuccessStreak((prevStreak) => {
+          const newStreak = prevStreak + 1;
 
-      if (successSoundRef.current) {
-        successSoundRef.current.currentTime = 0;
-        successSoundRef.current
-          .play()
-          .catch((error) => console.error("Error playing sound:", error));
+          if (successSoundRef.current) {
+            successSoundRef.current.currentTime = 0;
+            successSoundRef.current
+              .play()
+              .catch((error) => console.error("Error playing sound:", error));
+          }
+
+          return newStreak;
+        });
       }
 
       setUserInput("");
+      setTimeLeftMs(TIMER_DURATION_MS);
+      setTimerActive(true);
       setCurrentIndex((prevIndex) => (prevIndex + 1) % shuffledSymbols.length);
     }
   };
@@ -174,9 +205,18 @@ function App() {
         ))}
       </div>
       <div className="container">
-        <div className="streak">Current streak: {successStreak}</div>
+        <div className="streak">Streak: {successStreak}</div>
         <div className="character">{currentSymbol.character}</div>
         <div className="sequence">{formatSequence(currentSymbol.sequence)}</div>
+        <div className="timer-bar-container">
+          <div
+            className="timer-bar"
+            style={{
+              width: `${(timeLeftMs / TIMER_DURATION_MS) * 100}%`,
+              backgroundColor: `rgb(${255 - (timeLeftMs / TIMER_DURATION_MS) * 105}, ${(timeLeftMs / TIMER_DURATION_MS) * 204}, 0)`,
+            }}
+          />
+        </div>
         <input
           type="text"
           value={userInput}
