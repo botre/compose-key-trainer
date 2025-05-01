@@ -6,7 +6,7 @@ A fun, gamified application that makes learning compose key sequences engaging a
 
 Join our friendly mascot, Keyala, as you explore the world of compose key sequences through bite-sized, rewarding lessons:
 
-- Select from themed decks: Essentials, Math, Currency, Business, French, German, Spanish, or Symbols
+- Select from themed decks: Arrows, Currencies, French, German, Math, Portuguese, Spanish, or Symbols
 - Complete quick, 5-minute lessons that fit into your busy schedule
 - No login required—start playing immediately!
 - Progress is saved locally on your device
