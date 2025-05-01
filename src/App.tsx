@@ -28,6 +28,7 @@ const Decks: Record<string, DeckInfo> = {
   French: { label: "French", emoji: "🇫🇷" },
   German: { label: "German", emoji: "🇩🇪" },
   Math: { label: "Math", emoji: "🧮" },
+  Music: { label: "Music", emoji: "🎵" },
   Portuguese: { label: "Portuguese", emoji: "🇵🇹" },
   Spanish: { label: "Spanish", emoji: "🇪🇸" },
   Symbols: { label: "Symbols", emoji: "🔣" },
@@ -116,6 +117,13 @@ function App() {
         {character: "≠", sequence: ["/", "="], decks: ["Math"]},
         {character: "≤", sequence: ["<", "="], decks: ["Math"]},
         {character: "≥", sequence: [">", "="], decks: ["Math"]},
+        {character: "♩", sequence: ["#", "q"], decks: ["Music"]},
+        {character: "♪", sequence: ["#", "e"], decks: ["Music"]},
+        {character: "♫", sequence: ["#", "E"], decks: ["Music"]},
+        {character: "♬", sequence: ["#", "S"], decks: ["Music"]},
+        {character: "♭", sequence: ["#", "b"], decks: ["Music"]},
+        {character: "♮", sequence: ["#", "f"], decks: ["Music"]},
+        {character: "♯", sequence: ["#", "#"], decks: ["Music"]},
     ];
 
   const allDecks = useMemo(
