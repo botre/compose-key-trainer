@@ -102,6 +102,7 @@ function App() {
         {character: "ù", sequence: ["`", "u"], decks: ["French"]},
         {character: "ú", sequence: ["'", "u"], decks: ["Portuguese", "Spanish"]},
         {character: "ü", sequence: ['"', "u"], decks: ["German"]},
+        {character: "•", sequence: [".", "="], decks: ["Symbols"]},
         {character: "…", sequence: [".", "."], decks: ["Symbols"]},
         {character: "₤", sequence: ["=", "L"], decks: ["Currencies"]},
         {character: "€", sequence: ["=", "e"], decks: ["Currencies"]},
