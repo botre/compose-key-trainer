@@ -1,4 +1,11 @@
-import { useState, useEffect, useRef, ChangeEvent, Fragment } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  ChangeEvent,
+  CompositionEvent,
+  Fragment,
+} from "react";
 
 type GameMode = "practice" | "challenge";
 
@@ -166,6 +173,11 @@ const formatSequence = (sequence: string[]) => (
 function App() {
   const successSoundRef = useRef<HTMLAudioElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  // True while a compose-key / IME sequence is mid-flight.
+  const isComposingRef = useRef(false);
+  // The value committed by the last composition, used to drop the trailing
+  // change event some browsers fire right after `compositionend`.
+  const lastComposedRef = useRef<string | null>(null);
 
   useEffect(() => {
     successSoundRef.current = new Audio(
@@ -241,15 +253,14 @@ function App() {
   const hasSymbols = shuffledSymbols.length > 0;
   const currentSymbol = hasSymbols ? shuffledSymbols[currentIndex] : undefined;
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value;
-    setUserInput(input);
+  const evaluateInput = (value: string) => {
+    setUserInput(value);
 
     if (!currentSymbol) {
       return;
     }
 
-    if (input === currentSymbol.character) {
+    if (value === currentSymbol.character) {
       setIsWrong(false);
 
       if (successSoundRef.current) {
@@ -267,8 +278,42 @@ function App() {
       setUserInput("");
       setCurrentIndex((prevIndex) => (prevIndex + 1) % shuffledSymbols.length);
     } else {
-      setIsWrong(input.length > 0);
+      setIsWrong(value.length > 0);
     }
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Mid-composition (compose key / IME): show the in-progress text but don't
+    // judge it — the intermediate keystrokes aren't the final character.
+    if (isComposingRef.current) {
+      setUserInput(value);
+      return;
+    }
+
+    // Drop the trailing change event some browsers fire right after
+    // `compositionend`; it just repeats the value we already handled.
+    if (lastComposedRef.current !== null) {
+      const composed = lastComposedRef.current;
+      lastComposedRef.current = null;
+      if (value === composed) {
+        return;
+      }
+    }
+
+    evaluateInput(value);
+  };
+
+  const handleCompositionStart = () => {
+    isComposingRef.current = true;
+    setIsWrong(false);
+  };
+
+  const handleCompositionEnd = (e: CompositionEvent<HTMLInputElement>) => {
+    isComposingRef.current = false;
+    lastComposedRef.current = e.currentTarget.value;
+    evaluateInput(e.currentTarget.value);
   };
 
   const handleDeckToggle = (deckName: DeckName) => {
@@ -347,6 +392,8 @@ function App() {
               type="text"
               value={userInput}
               onChange={handleInputChange}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
               className={isWrong ? "input-wrong" : undefined}
               placeholder="Type here..."
               aria-label="Type the character shown above"
