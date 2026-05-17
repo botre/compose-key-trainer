@@ -79,9 +79,15 @@ body {
 }
 
 .mode-switch-link {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
   color: #1cb0f6;
+  font-family: inherit;
   font-size: 0.9rem;
   text-decoration: none;
+  cursor: pointer;
   transition: color 0.2s ease;
 }
 
@@ -155,6 +161,34 @@ input:focus {
   background-color: white;
 }
 
+input.input-wrong {
+  border-color: #ff4b4b;
+  animation: shake 0.3s ease;
+}
+
+input.input-wrong:focus {
+  border-color: #ff4b4b;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+.empty-state {
+  font-size: 1.2rem;
+  color: #777;
+  padding: 60px 0;
+}
+
 .timer-bar-container {
   width: 70%;
   max-width: 400px;
@@ -170,4 +204,30 @@ input:focus {
   transition:
     width 0.1s linear,
     background-color 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 20px 12px;
+  }
+
+  .app-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    flex: 1 1 auto;
+  }
+
+  .container {
+    padding: 30px 20px;
+  }
+
+  .character {
+    font-size: 5rem;
+  }
+
+  input {
+    width: 100%;
+  }
 }
