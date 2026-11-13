@@ -156,6 +156,11 @@ const shuffleArray = (array: CharacterData[]): CharacterData[] => {
   return shuffled;
 };
 
+const symbolsInDecks = (enabledDecks: ReadonlySet<DeckName>) =>
+  symbolsList.filter((symbol) =>
+    symbol.decks.some((deck) => enabledDecks.has(deck)),
+  );
+
 const formatSequence = (sequence: string[]) => (
   <>
     <span key="compose" className="key">
@@ -163,8 +168,11 @@ const formatSequence = (sequence: string[]) => (
     </span>
     {sequence.map((key, index) => (
       <Fragment key={`key-group-${index}`}>
-        <span> + </span>
-        <span className="key">{key}</span>
+        {" "}
+        <span className="key-group">
+          <span>+ </span>
+          <span className="key">{key}</span>
+        </span>
       </Fragment>
     ))}
   </>
@@ -185,29 +193,22 @@ function App() {
     );
   }, []);
 
-  const [enabledDecks, setEnabledDecks] = useState<Record<DeckName, boolean>>(
-    () =>
-      Object.fromEntries(allDecks.map((deck) => [deck, true])) as Record<
-        DeckName,
-        boolean
-      >,
+  const [enabledDecks, setEnabledDecks] = useState<ReadonlySet<DeckName>>(
+    () => new Set(allDecks),
   );
 
-  const [shuffledSymbols, setShuffledSymbols] = useState<CharacterData[]>([]);
+  // Shuffled in the initialiser, not an effect, so the first paint already
+  // shows a character. An empty first frame that then grows shifts the
+  // layout under a slow connection.
+  const [shuffledSymbols, setShuffledSymbols] = useState<CharacterData[]>(() =>
+    shuffleArray(symbolsList),
+  );
   const [userInput, setUserInput] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [successStreak, setSuccessStreak] = useState(0);
   const [timeLeftMs, setTimeLeftMs] = useState(TIMER_DURATION_MS);
   const [gameMode, setGameMode] = useState<GameMode>("practice");
   const [isWrong, setIsWrong] = useState(false);
-
-  useEffect(() => {
-    const filtered = symbolsList.filter((symbol) =>
-      symbol.decks.some((deck) => enabledDecks[deck]),
-    );
-    setShuffledSymbols(shuffleArray(filtered));
-    setCurrentIndex(0);
-  }, [enabledDecks]);
 
   useEffect(() => {
     if (currentIndex >= shuffledSymbols.length && shuffledSymbols.length > 0) {
@@ -222,7 +223,6 @@ function App() {
     inputRef.current?.focus();
   }, [currentIndex, gameMode]);
 
-  // Challenge-mode countdown timer.
   useEffect(() => {
     setTimeLeftMs(TIMER_DURATION_MS);
 
@@ -286,7 +286,7 @@ function App() {
     const value = e.target.value;
 
     // Mid-composition (compose key / IME): show the in-progress text but don't
-    // judge it — the intermediate keystrokes aren't the final character.
+    // judge it, since the intermediate keystrokes aren't the final character.
     if (isComposingRef.current) {
       setUserInput(value);
       return;
@@ -317,10 +317,13 @@ function App() {
   };
 
   const handleDeckToggle = (deckName: DeckName) => {
-    setEnabledDecks((prevEnabledDecks) => ({
-      ...prevEnabledDecks,
-      [deckName]: !prevEnabledDecks[deckName],
-    }));
+    const nextEnabledDecks = new Set(enabledDecks);
+    if (!nextEnabledDecks.delete(deckName)) {
+      nextEnabledDecks.add(deckName);
+    }
+    setEnabledDecks(nextEnabledDecks);
+    setShuffledSymbols(shuffleArray(symbolsInDecks(nextEnabledDecks)));
+    setCurrentIndex(0);
   };
 
   const toggleGameMode = () => {
@@ -355,7 +358,7 @@ function App() {
             <label>
               <input
                 type="checkbox"
-                checked={enabledDecks[deck]}
+                checked={enabledDecks.has(deck)}
                 onChange={() => handleDeckToggle(deck)}
               />
               <span className="subtle-emoji">{Decks[deck].emoji}</span>{" "}
@@ -398,6 +401,9 @@ function App() {
               placeholder="Type here..."
               aria-label="Type the character shown above"
               autoComplete="off"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
               autoFocus
             />
           </>
