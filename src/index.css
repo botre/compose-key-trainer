@@ -1,3 +1,11 @@
+/* Padding and borders sit inside every width, so a box set to 100% of its
+   parent, or a body set to 100vh, never grows past it. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family:
     system-ui,
@@ -22,7 +30,8 @@ body {
 }
 
 .sidebar {
-  flex: 0 0 200px;
+  /* 200px of content plus the 20px padding each side. */
+  flex: 0 0 240px;
   background-color: white;
   padding: 20px;
   border-radius: 16px;
@@ -135,6 +144,11 @@ body {
   transform: translateY(-2px);
 }
 
+.key-group {
+  /* A line break may fall between groups, never between a "+" and its key. */
+  white-space: nowrap;
+}
+
 .sequence {
   margin: 30px 0;
   font-size: 1.6rem;
@@ -221,6 +235,9 @@ input.input-wrong:focus {
 
   .container {
     padding: 30px 20px;
+    /* The trainer comes before the settings once they stack, so a phone
+       opens on the character to type rather than on the deck list. */
+    order: -1;
   }
 
   .character {
@@ -229,5 +246,20 @@ input.input-wrong:focus {
 
   input {
     width: 100%;
+  }
+}
+
+/* A finger needs about 44px to hit a control; a mouse does not, so the
+   desktop stays compact. Every button and label here is a control, so one
+   rule covers them all and a new control needs no rule of its own. */
+@media (pointer: coarse) {
+  button,
+  label {
+    min-height: 44px;
+  }
+
+  /* The 44px rows replace the gaps between the deck options. */
+  .deck-option {
+    margin: 0;
   }
 }
